@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "eneco-sre-challenge.fullname" . }}-test-connection"
+  labels:
+    {{- include "eneco-sre-challenge.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "eneco-sre-challenge.fullname" . }}:{{ .Values.service.port }}']
+  restartPolicy: Never
