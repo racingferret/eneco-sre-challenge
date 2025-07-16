@@ -1,0 +1,63 @@
+name: CD - Deploy to Staging/Prod
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  pre_deploy_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: npm ci
+      - name: Run integration tests
+        run: npm run test:integration
+
+  deploy:
+    needs: pre_deploy_tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to environment
+        run: ./scripts/deploy.sh ${{ github.ref_name }}
+
+  post_deploy_verification:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify health endpoint
+        run: |
+          curl --fail https://staging.myapp.com/health || exit 1
+
+  monitor:
+    needs: post_deploy_verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Monitor error rate
+        run: |
+          ERRORS=$(curl -s https://metrics.myapp.com/errors)
+          if [ "$ERRORS" -gt 50 ]; then
+            echo "High error rate detected"
+            exit 1
+          fi
+
+  rollback:
+    needs: monitor
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger rollback
+        run: kubectl rollout undo deployment/my-app
+
+  observability:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Datadog
+        uses: DataDog/github-action@v1
+        with:
+          api_key: ${{ secrets.DATADOG_API_KEY }}
+          service: 'my-app'
+          env: 'staging'
+          version: ${{ github.ref_name }}
