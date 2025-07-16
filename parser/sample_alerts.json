@@ -1,0 +1,26 @@
+{
+  "alerts": [
+    {
+      "id": "ALT-1023",
+      "timestamp": "2024-04-28T09:15:22Z",
+      "service": "payment-processor",
+      "component": "api-gateway",
+      "severity": "critical",
+      "metric": "latency",
+      "value": 2300,
+      "threshold": 1000,
+      "description": "API response time exceeded threshold"
+    },
+    {
+      "id": "ALT-1024",
+      "timestamp": "2024-04-28T09:16:02Z",
+      "service": "payment-processor",
+      "component": "database",
+      "severity": "warning",
+      "metric": "cpu_usage",
+      "value": 85,
+      "threshold": 80,
+      "description": "Database CPU usage approaching critical threshold"
+    }
+  ]
+}
