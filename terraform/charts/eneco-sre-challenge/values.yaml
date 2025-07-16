@@ -122,6 +122,7 @@ tolerations: []
 
 affinity: {}
 
+# Application environemnt variables
 API_BASE_URL: default_vaule1
 LOG_LEVEL: default_value2
 MAX_CONNECTIONS: "10"
